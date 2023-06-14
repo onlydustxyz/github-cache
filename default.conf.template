@@ -4,12 +4,12 @@ default_type  application/octet-stream;
 # Caches
 proxy_cache_path /var/cache/github-api levels=1:2 keys_zone=github_api_cache:10m inactive=1y;
 
-# Replace all occurrences of "api.github.com" by "gateway.onlydust.xyz" in Link header
+# Replace all occurrences of "api.github.com" by "github-cache.onlydust.xyz" in Link header
 map $upstream_http_link $new_link {
-  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"   $1$OD_GATEWAY_BASE_URL/github$2$OD_GATEWAY_BASE_URL/github$3$OD_GATEWAY_BASE_URL/github$4$OD_GATEWAY_BASE_URL/github$5;
-  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"                                 $1$OD_GATEWAY_BASE_URL/github$2$OD_GATEWAY_BASE_URL/github$3$OD_GATEWAY_BASE_URL/github$4;
-  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"                                                               $1$OD_GATEWAY_BASE_URL/github$2$OD_GATEWAY_BASE_URL/github$3;
-  "~^(.*)https:\/\/api\.github\.com(.*)$"                                                                                             $1$OD_GATEWAY_BASE_URL/github$2;
+  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"   $1$OD_GITHUBCACHE_BASE_URL/github$2$OD_GITHUBCACHE_BASE_URL/github$3$OD_GITHUBCACHE_BASE_URL/github$4$OD_GITHUBCACHE_BASE_URL/github$5;
+  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"                                 $1$OD_GITHUBCACHE_BASE_URL/github$2$OD_GITHUBCACHE_BASE_URL/github$3$OD_GITHUBCACHE_BASE_URL/github$4;
+  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"                                                               $1$OD_GITHUBCACHE_BASE_URL/github$2$OD_GITHUBCACHE_BASE_URL/github$3;
+  "~^(.*)https:\/\/api\.github\.com(.*)$"                                                                                             $1$OD_GITHUBCACHE_BASE_URL/github$2;
 }
 
 # Upstreams
@@ -30,13 +30,14 @@ log_format github_log_format escape=json
   '"X-Ratelimit-Used": $upstream_http_x_ratelimit_used,'
   '"X-Ratelimit-Resource": "$upstream_http_x_ratelimit_resource",'
   '"Etag": "$upstream_http_etag",'
-  '"X-Gateway-Cache-Status": "$upstream_cache_status"'
+  '"X-Gateway-Cache-Status": "$upstream_cache_status",'
+  '"X-Github-Cache-Status": "$upstream_cache_status"'
 '}';
 
 server {
   listen $PORT default_server;
 
-  location /github/ {
+  location / {
     proxy_pass https://github-api/;
     proxy_set_header Host api.github.com;
     proxy_set_header Authorization $http_authorization;
@@ -58,6 +59,7 @@ server {
     proxy_ignore_headers Cache-Control;
 
     add_header X-Gateway-Cache-Status $upstream_cache_status;
+    add_header X-Github-Cache-Status $upstream_cache_status;
 
     proxy_hide_header Link;
     add_header Link $new_link;

@@ -13,6 +13,15 @@ The reason we want to have a Docker container for this is that we want to be abl
 You will need to create a Heroku account and install the Heroku CLI, eg.
 `brew install heroku`.
 
+As a prerequisitory, you must set the `OD_GITHUBCACHE_BASE_URL` environement variable according to the
+environement (develop, staging or production).
+
+Eg.
+
+```sh
+heroku config:set OD_GITHUBCACHE_BASE_URL=https://develop.github-cache.onlydust.xyz -a od-github-cache-develop
+```
+
 Then, deploy with the following commands (the app name depends on the environement you want to deploy to):
 
 ```sh
@@ -29,7 +38,7 @@ To test the configuration locally, you can run:
 
 ```sh
 docker build -t github-cache .
-docker run -p 3000:3000 --env PORT=3000 --rm -it github-cache
+docker run -p 3000:3000 --env PORT=3000 --env OD_GITHUBCACHE_BASE_URL=http://localhost:3000 --rm -it github-cache
 ```
 
 Then, you can access the proxy at http://localhost:3000.
