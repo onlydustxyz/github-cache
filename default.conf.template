@@ -12,6 +12,12 @@ map $upstream_http_link $new_link {
   "~^(.*)https:\/\/api\.github\.com(.*)$"                                                                                             $1$OD_GITHUBCACHE_BASE_URL$2;
 }
 
+# Extract 8 first meaningful characters from the Github Token
+map $http_authorization $github_token {
+  default "";
+  "~^Bearer (ghp_[a-zA-Z0-9]{8})" $1;
+}
+
 # Upstreams
 upstream github-api {
   server api.github.com:443;
@@ -31,7 +37,8 @@ log_format github_log_format escape=json
   '"X-Ratelimit-Resource": "$upstream_http_x_ratelimit_resource",'
   '"Etag": "$upstream_http_etag",'
   '"X-Gateway-Cache-Status": "$upstream_cache_status",'
-  '"X-Github-Cache-Status": "$upstream_cache_status"'
+  '"X-Github-Cache-Status": "$upstream_cache_status",'
+  '"github_token_prefix": "$github_token"'
 '}';
 
 server {
