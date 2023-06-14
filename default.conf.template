@@ -6,10 +6,10 @@ proxy_cache_path /var/cache/github-api levels=1:2 keys_zone=github_api_cache:10m
 
 # Replace all occurrences of "api.github.com" by "github-cache.onlydust.xyz" in Link header
 map $upstream_http_link $new_link {
-  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"   $1$OD_GITHUBCACHE_BASE_URL/github$2$OD_GITHUBCACHE_BASE_URL/github$3$OD_GITHUBCACHE_BASE_URL/github$4$OD_GITHUBCACHE_BASE_URL/github$5;
-  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"                                 $1$OD_GITHUBCACHE_BASE_URL/github$2$OD_GITHUBCACHE_BASE_URL/github$3$OD_GITHUBCACHE_BASE_URL/github$4;
-  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"                                                               $1$OD_GITHUBCACHE_BASE_URL/github$2$OD_GITHUBCACHE_BASE_URL/github$3;
-  "~^(.*)https:\/\/api\.github\.com(.*)$"                                                                                             $1$OD_GITHUBCACHE_BASE_URL/github$2;
+  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"   $1$OD_GITHUBCACHE_BASE_URL$2$OD_GITHUBCACHE_BASE_URL$3$OD_GITHUBCACHE_BASE_URL$4$OD_GITHUBCACHE_BASE_URL$5;
+  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"                                 $1$OD_GITHUBCACHE_BASE_URL$2$OD_GITHUBCACHE_BASE_URL$3$OD_GITHUBCACHE_BASE_URL$4;
+  "~^(.*)https:\/\/api\.github\.com(.*)https:\/\/api\.github\.com(.*)$"                                                               $1$OD_GITHUBCACHE_BASE_URL$2$OD_GITHUBCACHE_BASE_URL$3;
+  "~^(.*)https:\/\/api\.github\.com(.*)$"                                                                                             $1$OD_GITHUBCACHE_BASE_URL$2;
 }
 
 # Upstreams
@@ -64,7 +64,7 @@ server {
     proxy_hide_header Link;
     add_header Link $new_link;
 
-    location /github/rate_limit {
+    location /rate_limit {
       proxy_pass https://github-api/rate_limit;
       proxy_cache_bypass 1;
       proxy_no_cache 1;
