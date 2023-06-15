@@ -14,8 +14,8 @@ map $upstream_http_link $new_link {
 
 # Extract 8 first meaningful characters from the Github Token
 map $http_authorization $github_token {
-  default "";
-  "~^Bearer (ghp_[a-zA-Z0-9]{8})" $1;
+  default "none";
+  "~^Bearer ([-_a-zA-Z0-9]{12})" $1;
 }
 
 # Upstreams
