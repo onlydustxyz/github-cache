@@ -29,7 +29,7 @@ log_format github_log_format escape=json
   '"time_local": "$time_local",'
   '"request": "$request",'
   '"status": $status,'
-  '"upstream_status": "$upstream_status",'
+  '"upstream_status": $upstream_status,'
   '"user_agent": "$http_user_agent",'
   '"X-Ratelimit-Limit": $upstream_http_x_ratelimit_limit,'
   '"X-Ratelimit-Remaining": $upstream_http_x_ratelimit_remaining,'
@@ -37,7 +37,6 @@ log_format github_log_format escape=json
   '"X-Ratelimit-Used": $upstream_http_x_ratelimit_used,'
   '"X-Ratelimit-Resource": "$upstream_http_x_ratelimit_resource",'
   '"Etag": "$upstream_http_etag",'
-  '"X-Gateway-Cache-Status": "$upstream_cache_status",'
   '"X-Github-Cache-Status": "$upstream_cache_status",'
   '"github_token_prefix": "$github_token"'
 '}';
@@ -53,22 +52,17 @@ server {
     access_log /dev/stdout github_log_format;
 
     proxy_cache github_api_cache;
-    proxy_cache_valid 200 1m;
-    proxy_cache_valid 404 5s;
+    proxy_cache_valid 200 302 1m;
+    proxy_cache_valid 404 30s;
     proxy_cache_bypass $http_pragma;
-    proxy_cache_use_stale updating;
-    # proxy_cache_background_update on;
+    proxy_cache_use_stale error timeout invalid_header updating http_500 http_502 http_503 http_504;
     proxy_cache_revalidate on;
     proxy_cache_lock on;
-    proxy_cache_lock_age 5s;
-    proxy_cache_lock_timeout 10s;
-    proxy_ignore_headers X-Accel-Expires;
-    proxy_ignore_headers Expires;
-    proxy_ignore_headers Cache-Control;
+    proxy_cache_lock_age 10s;
+    proxy_cache_lock_timeout 20s;
+    proxy_ignore_headers Expires Cache-Control Set-Cookie X-Accel-Redirect X-Accel-Expires;
 
-    add_header X-Gateway-Cache-Status $upstream_cache_status;
     add_header X-Github-Cache-Status $upstream_cache_status;
-
     proxy_hide_header Link;
     add_header Link $new_link;
 
