@@ -29,6 +29,7 @@ log_format github_log_format escape=json
   '"time_local": "$time_local",'
   '"request": "$request",'
   '"status": $status,'
+  '"upstream_status": "$upstream_status",'
   '"user_agent": "$http_user_agent",'
   '"X-Ratelimit-Limit": $upstream_http_x_ratelimit_limit,'
   '"X-Ratelimit-Remaining": $upstream_http_x_ratelimit_remaining,'
@@ -56,7 +57,7 @@ server {
     proxy_cache_valid 404 5s;
     proxy_cache_bypass $http_pragma;
     proxy_cache_use_stale updating;
-    proxy_cache_background_update on;
+    # proxy_cache_background_update on;
     proxy_cache_revalidate on;
     proxy_cache_lock on;
     proxy_cache_lock_age 5s;
