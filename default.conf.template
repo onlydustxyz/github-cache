@@ -55,17 +55,31 @@ server {
     proxy_cache_valid 200 302 1m;
     proxy_cache_valid 404 30s;
     proxy_cache_bypass $http_pragma;
+
+    # Allows to reply with an expired entry while the entry is being updated, or if GitHub replies with a 5xx error
     proxy_cache_use_stale error timeout invalid_header updating http_500 http_502 http_503 http_504;
+
+    # Enables revalidation of expired cache items using conditional requests with the “If-Modified-Since” and “If-None-Match” header fields.
+    # This is probably the most import line in this configuration.
     proxy_cache_revalidate on;
+
+    # Ensure only one request at a time will be allowed to populate a new cache element.
+    # Other requests of the same cache element will either wait for a response to appear in the cache or the cache lock for this element to be released.
     proxy_cache_lock on;
     proxy_cache_lock_age 10s;
     proxy_cache_lock_timeout 20s;
+
+    # Ignore HTTP headers coming from GitHub to control the cache
     proxy_ignore_headers Expires Cache-Control Set-Cookie X-Accel-Redirect X-Accel-Expires;
 
+    # Add cache status information in the reply
     add_header X-Github-Cache-Status $upstream_cache_status;
+
+    # Override Link header so that we make sure pagination still targets this cache
     proxy_hide_header Link;
     add_header Link $new_link;
 
+    # Bypass caching for /rate_limit endpoint. This doesn't decrease the rate limiting.
     location /rate_limit {
       proxy_pass https://github-api/rate_limit;
       proxy_cache_bypass 1;
